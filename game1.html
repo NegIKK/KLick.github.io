@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>21 · Z-казино</title>
+    <style>
+        @font-face {
+            font-family: 'Ithaca';
+            src: url('res/ofont_Ithaca.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ithaca', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23, #1a1a3e);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(25, 25, 45, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ffff55;
+            position: relative;
+        }
+
+        h1 {
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #0066ff;
+            font-size: 2.8em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .balance-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #00b3ff;
+            border-radius: 12px;
+            padding: 15px 25px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .balance-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .balance-label {
+            color: #88d0ff;
+            font-size: 1em;
+        }
+
+        .balance-value {
+            color: #ffffff;
+            font-size: 1.6em;
+            font-weight: bold;
+        }
+
+        .bet-section {
+            background: rgba(0, 180, 255, 0.1);
+            border: 1px solid #00b3ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bet-title {
+            color: #aaa;
+            font-size: 1.1em;
+        }
+
+        .bet-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .bet-input {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #00c6ff;
+            border-radius: 8px;
+            padding: 12px 20px;
+            color: white;
+            font-size: 1.2em;
+            width: 150px;
+            text-align: center;
+        }
+
+        .bet-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px #00ffff;
+        }
+
+        button {
+            background: linear-gradient(45deg, #00b3ff, #0077ff);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 180, 255, 0.3);
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 180, 255, 0.5);
+        }
+
+        button:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #444;
+        }
+
+        .deal-btn {
+            background: linear-gradient(45deg, #00ff9d, #00b366);
+            min-width: 200px;
+            font-size: 1.4em;
+            padding: 15px 40px;
+        }
+
+        .game-table {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            border: 1px solid #448aff;
+        }
+
+        .player-area, .dealer-area {
+            text-align: left;
+        }
+
+        .area-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #88d0ff;
+            font-size: 1.3em;
+        }
+
+        .cards {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            min-height: 120px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #ffffff, #e6e9f0);
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 8px 0 #0a0a1a, 0 10px 20px black;
+            color: #0a0a1a;
+            font-size: 2.2em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 80px;
+            height: 110px;
+            border: 2px solid #00ffff;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .card-red {
+            color: #e63946;
+        }
+
+        .card-black {
+            color: #1e1e2f;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-area {
+            text-align: center;
+            font-size: 1.8em;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 8px solid #00ffff;
+            color: #ffffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        .win {
+            color: #b0ff8c;
+            border-left-color: #00ff88;
+        }
+
+        .lose {
+            color: #ff8c8c;
+            border-left-color: #ff4444;
+        }
+
+        .draw {
+            color: #ffd700;
+            border-left-color: #ffaa00;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .hit-btn {
+            background: linear-gradient(45deg, #ff9900, #ff6600);
+        }
+
+        .stand-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ff3b3b);
+        }
+
+        .return-btn {
+            background: linear-gradient(45deg, #4caf50, #2e7d32);
+            margin-top: 20px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #aaa;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        /* эффект монеток */
+        .effect-coin {
+            position: fixed;
+            color: #ffd700;
+            font-size: 26px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 9999;
+            animation: coinFly 1s forwards;
+            text-shadow: 0 0 5px #ffaa00;
+        }
+
+        @keyframes coinFly {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(1.8) translateY(-60px); }
+        }
+
+        .changelog-btn {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            background: #007bff;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            opacity: 0.7;
+            transition: 0.3s;
+        }
+
+        .changelog-btn:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .game-container { padding: 20px; }
+            h1 { font-size: 2.2em; }
+            .card { font-size: 1.8em; min-width: 65px; height: 95px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>♠️ 21 ♥️</h1>
+        
+        <!-- Баланс USD из биржи -->
+        <div class="balance-panel">
+            <div class="balance-item">
+                <span class="balance-label">Ваш баланс USD</span>
+                <span id="usdBalance" class="balance-value">0.00</span>
+            </div>
+            <div class="balance-item">
+                <span class="balance-label">Текущая ставка</span>
+                <span id="currentBetDisplay" class="balance-value" style="color: #ffd700;">0.00 $</span>
+            </div>
+        </div>
+
+        <!-- Секция ставки -->
+        <div class="bet-section">
+            <span class="bet-title">💰 Сделайте ставку (минимум 1 USD)</span>
+            <div class="bet-controls">
+                <input type="number" id="betAmount" class="bet-input" value="10" min="1" step="1" placeholder="Сумма">
+                <button id="dealBtn" class="deal-btn">🎲 Сдать карты</button>
+            </div>
+        </div>
+
+        <!-- Игровой стол -->
+        <div class="game-table">
+            <!-- Дилер -->
+            <div class="dealer-area">
+                <div class="area-header">
+                    <span>🖥️ Дилер</span>
+                    <span id="dealerScore">Очки: 0</span>
+                </div>
+                <div id="dealerCards" class="cards"></div>
+            </div>
+            
+            <!-- Игрок -->
+            <div class="player-area">
+                <div class="area-header">
+                    <span>👤 Игрок</span>
+                    <span id="playerScore">Очки: 0</span>
+                </div>
+                <div id="playerCards" class="cards"></div>
+            </div>
+        </div>
+
+        <!-- Результат раунда -->
+        <div id="resultMessage" class="result-area">🃏 Сделайте ставку и начните игру</div>
+
+        <!-- Кнопки действий (Hit / Stand) -->
+        <div class="action-buttons">
+            <button id="hitBtn" class="hit-btn" disabled>➕ Взять карту</button>
+            <button id="standBtn" class="stand-btn" disabled>⏹️ Хватит</button>
+        </div>
+
+        <!-- Возврат в Z-майнинг -->
+        <div style="display: flex; justify-content: center;">
+            <button id="returnBtn" class="return-btn">⬅ Вернуться в Z‑майнинг</button>
+        </div>
+        
+        <div class="footer">
+            <p>21 — цель набрать 21 или быть ближе к 21, чем дилер. Туз = 1 или 11.</p>
+            <p>Выигрыш: x2 от ставки. Ничья — возврат ставки.</p>
+        </div>
+    </div>
+
+    <!-- Кнопка Changelog (как в index) -->
+    <button class="changelog-btn" onclick="openChangelog21()">📜 Changelog</button>
+
+    <script>
+        // -----------------------------
+        // ЗВУКИ (из папки res, как в слотах)
+        // -----------------------------
+        const cardSound = new Audio('res/click.wav');      // звук карты (используем click.wav)
+        const winSound = new Audio('res/win.mp3');
+        const loseSound = new Audio('res/lose.mp3');       // если нет — заглушка
+        const chipSound = new Audio('res/coin_buy.mp3');   // ставка
+
+        cardSound.volume = 0.5;
+        winSound.volume = 0.8;
+        chipSound.volume = 0.6;
+        if (loseSound) loseSound.volume = 0.7;
+
+        // если lose.mp3 нет — создаём заглушку (не будет ошибки)
+        loseSound.onerror = () => { console.log('lose.mp3 не найден, используется заглушка'); };
+
+        // -----------------------------
+        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+        // -----------------------------
+        let gameData = {
+            usdBalance: 10.00      // USD баланс — берём из localStorage
+        };
+
+        let currentBet = 10;        // текущая ставка
+        let playerHand = [];
+        let dealerHand = [];
+        let gameActive = false;    // активен ли раунд
+        let gameResult = null;     // 'win', 'lose', 'draw'
+
+        // -----------------------------
+        // ЗАГРУЗКА USD ИЗ localStorage (Z-Биржа / Z-майнинг)
+        // -----------------------------
+        function loadBalance() {
+            try {
+                const saved = localStorage.getItem('zMining');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    // Берём usdBalance, если есть, иначе оставляем текущий
+                    if (typeof parsed.usdBalance === 'number') {
+                        gameData.usdBalance = parsed.usdBalance;
+                    }
+                }
+            } catch (e) {
+                console.error('Ошибка загрузки баланса:', e);
+            }
+            // Округляем до 2 знаков
+            gameData.usdBalance = Math.round(gameData.usdBalance * 100) / 100;
+            updateBalanceUI();
+        }
+
+        // -----------------------------
+        // СОХРАНЕНИЕ USD В localStorage
+        // -----------------------------
+        function saveBalance() {
+            try {
+                const saved = localStorage.getItem('zMining');
+                let gameState = saved ? JSON.parse(saved) : {};
+                gameState.usdBalance = gameData.usdBalance;
+                localStorage.setItem('zMining', JSON.stringify(gameState));
+                console.log('Баланс USD сохранён:', gameData.usdBalance);
+            } catch (e) {
+                console.error('Ошибка сохранения баланса:', e);
+            }
+        }
+
+        // -----------------------------
+        // ОБНОВЛЕНИЕ ИНТЕРФЕЙСА БАЛАНСА
+        // -----------------------------
+        function updateBalanceUI() {
+            document.getElementById('usdBalance').textContent = gameData.usdBalance.toFixed(2);
+            document.getElementById('currentBetDisplay').textContent = currentBet.toFixed(2) + ' $';
+        }
+
+        // -----------------------------
+        // ПОЛУЧЕНИЕ СЛУЧАЙНОЙ КАРТЫ
+        // -----------------------------
+        function getRandomCard() {
+            const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+            const suits = ['♠', '♥', '♦', '♣'];
+            const rank = ranks[Math.floor(Math.random() * ranks.length)];
+            const suit = suits[Math.floor(Math.random() * suits.length)];
+            
+            let value = 0;
+            if (rank === 'A') value = 11; // туз — 11 (позже адаптируем)
+            else if (['J', 'Q', 'K'].includes(rank)) value = 10;
+            else value = parseInt(rank);
+            
+            return { rank, suit, value };
+        }
+
+        // -----------------------------
+        // ПОДСЧЁТ ОЧКОВ (с адаптацией туза)
+        // -----------------------------
+        function calculateScore(hand) {
+            let score = 0;
+            let aces = 0;
+            
+            hand.forEach(card => {
+                score += card.value;
+                if (card.rank === 'A') aces++;
+            });
+            
+            // если перебор и есть тузы — уменьшаем с 11 до 1
+            while (score > 21 && aces > 0) {
+                score -= 10;
+                aces--;
+            }
+            return score;
+        }
+
+        // -----------------------------
+        // ОТРИСОВКА КАРТ
+        // -----------------------------
+        function renderCards() {
+            const playerContainer = document.getElementById('playerCards');
+            const dealerContainer = document.getElementById('dealerCards');
+            
+            // Отрисовка карт игрока
+            playerContainer.innerHTML = '';
+            playerHand.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                // красные масти
+                if (card.suit === '♥' || card.suit === '♦') {
+                    cardEl.classList.add('card-red');
+                } else {
+                    cardEl.classList.add('card-black');
+                }
+                cardEl.textContent = `${card.rank}${card.suit}`;
+                playerContainer.appendChild(cardEl);
+            });
+            
+            // Отрисовка карт дилера
+            dealerContainer.innerHTML = '';
+            dealerHand.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                if (card.suit === '♥' || card.suit === '♦') {
+                    cardEl.classList.add('card-red');
+                } else {
+                    cardEl.classList.add('card-black');
+                }
+                cardEl.textContent = `${card.rank}${card.suit}`;
+                dealerContainer.appendChild(cardEl);
+            });
+
+            // Обновляем очки
+            document.getElementById('playerScore').textContent = `Очки: ${calculateScore(playerHand)}`;
+            document.getElementById('dealerScore').textContent = `Очки: ${calculateScore(dealerHand)}`;
+        }
+
+        // -----------------------------
+        // ЭФФЕКТ МОНЕТОК (при выигрыше)
+        // -----------------------------
+        function createCoinEffect(amount) {
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const coin = document.createElement('div');
+                    coin.className = 'effect-coin';
+                    coin.textContent = `+${amount.toFixed(2)}$`;
+                    coin.style.left = Math.random() * window.innerWidth + 'px';
+                    coin.style.top = Math.random() * window.innerHeight + 'px';
+                    coin.style.color = '#ffd700';
+                    document.body.appendChild(coin);
+                    setTimeout(() => coin.remove(), 1000);
+                }, i * 50);
+            }
+        }
+
+        // -----------------------------
+        // НАЧАЛО НОВОГО РАУНДА
+        // -----------------------------
+        function startRound() {
+            // Получаем ставку
+            const betInput = document.getElementById('betAmount');
+            let bet = parseFloat(betInput.value);
+            if (isNaN(bet) || bet < 1) bet = 1;
+            // Ограничим ставку балансом
+            if (bet > gameData.usdBalance) {
+                alert(`Недостаточно USD! Ваш баланс: ${gameData.usdBalance.toFixed(2)}$`);
+                return;
+            }
+            
+            // Списываем ставку
+            gameData.usdBalance -= bet;
+            gameData.usdBalance = Math.round(gameData.usdBalance * 100) / 100;
+            currentBet = bet;
+            saveBalance();
+            updateBalanceUI();
+            
+            // Звук ставки
+            chipSound.play().catch(e => {});
+
+            // Сбрасываем руки
+            playerHand = [];
+            dealerHand = [];
+            
+            // Раздаём по 2 карты
+            playerHand.push(getRandomCard());
+            playerHand.push(getRandomCard());
+            dealerHand.push(getRandomCard());
+            dealerHand.push(getRandomCard());
+            
+            // Проверка на блэкджек (21 сразу)
+            const playerScore = calculateScore(playerHand);
+            
+            // Активируем игру
+            gameActive = true;
+            document.getElementById('dealBtn').disabled = true;
+            document.getElementById('hitBtn').disabled = false;
+            document.getElementById('standBtn').disabled = false;
+            
+            // Звук карт
+            cardSound.play().catch(e => {});
+            
+            renderCards();
+            
+            // Если у игрока сразу 21 — автоматически stand
+            if (playerScore === 21) {
+                stand();
+            }
+        }
+
+        // -----------------------------
+        // ВЗЯТЬ КАРТУ (HIT)
+        // -----------------------------
+        function hit() {
+            if (!gameActive) return;
+            
+            playerHand.push(getRandomCard());
+            cardSound.play().catch(e => {});
+            
+            renderCards();
+            
+            const playerScore = calculateScore(playerHand);
+            
+            // Перебор — игрок проиграл
+            if (playerScore > 21) {
+                endRound('lose', 'Перебор! Вы проиграли.');
+            }
+        }
+
+        // -----------------------------
+        // ХВАТИТ (STAND)
+        // -----------------------------
+        function stand() {
+            if (!gameActive) return;
+            
+            gameActive = false;
+            document.getElementById('hitBtn').disabled = true;
+            document.getElementById('standBtn').disabled = true;
+            
+            // Дилер добирает до 17
+            while (calculateScore(dealerHand) < 17) {
+                dealerHand.push(getRandomCard());
+                cardSound.play().catch(e => {});
+            }
+            
+            renderCards();
+            
+            const playerScore = calculateScore(playerHand);
+            const dealerScore = calculateScore(dealerHand);
+            
+            // Определяем результат
+            if (dealerScore > 21) {
+                endRound('win', `Дилер перебрал! Вы выиграли ${(currentBet * 2).toFixed(2)}$`);
+            } else if (playerScore > dealerScore) {
+                endRound('win', `Вы набрали ${playerScore}, дилер ${dealerScore}. Вы выиграли ${(currentBet * 2).toFixed(2)}$`);
+            } else if (playerScore < dealerScore) {
+                endRound('lose', `Вы набрали ${playerScore}, дилер ${dealerScore}. Вы проиграли.`);
+            } else {
+                endRound('draw', `Ничья! Ваша ставка возвращена.`);
+            }
+        }
+
+        // -----------------------------
+        // ЗАВЕРШЕНИЕ РАУНДА
+        // -----------------------------
+        function endRound(result, message) {
+            gameActive = false;
+            document.getElementById('hitBtn').disabled = true;
+            document.getElementById('standBtn').disabled = true;
+            document.getElementById('dealBtn').disabled = false;
+            
+            const resultDiv = document.getElementById('resultMessage');
+            resultDiv.textContent = message;
+            resultDiv.classList.remove('win', 'lose', 'draw');
+            
+            let winAmount = 0;
+            
+            if (result === 'win') {
+                winAmount = currentBet * 2;
+                gameData.usdBalance += winAmount;
+                gameData.usdBalance = Math.round(gameData.usdBalance * 100) / 100;
+                resultDiv.classList.add('win');
+                winSound.play().catch(e => {});
+                createCoinEffect(winAmount);
+            } else if (result === 'lose') {
+                resultDiv.classList.add('lose');
+                loseSound.play().catch(e => {});
+                winAmount = 0;
+            } else if (result === 'draw') {
+                gameData.usdBalance += currentBet; // возврат ставки
+                gameData.usdBalance = Math.round(gameData.usdBalance * 100) / 100;
+                resultDiv.classList.add('draw');
+                winAmount = 0;
+            }
+            
+            saveBalance();
+            updateBalanceUI();
+        }
+
+        // -----------------------------
+        // ВОЗВРАТ В ОСНОВНУЮ ИГРУ
+        // -----------------------------
+        function returnToMining() {
+            saveBalance();
+            window.location.href = 'index.html';
+        }
+
+        // -----------------------------
+        // ИНИЦИАЛИЗАЦИЯ
+        // -----------------------------
+        window.addEventListener('load', () => {
+            loadBalance();
+            updateBalanceUI();
+            
+            // Кнопки
+            document.getElementById('dealBtn').addEventListener('click', startRound);
+            document.getElementById('hitBtn').addEventListener('click', hit);
+            document.getElementById('standBtn').addEventListener('click', stand);
+            document.getElementById('returnBtn').addEventListener('click', returnToMining);
+            
+            // Периодическая синхронизация с localStorage (на случай изменения в другой вкладке)
+            setInterval(() => {
+                loadBalance();
+            }, 3000);
+        });
+
+        // -----------------------------
+        // CHANGELOG
+        // -----------------------------
+        function openChangelog21() {
+            const changelogText = `
+Changelog — 21 (Z-казино) v1.0.0
+
+🃏 Новая игра «21» (очко/блэкджек)
+— Полная интеграция с балансом USD из Z-биржи / Z-майнинга.
+— Ставки в USD, минимальная ставка 1$.
+— При выигрыше — x2 от ставки.
+— Ничья — возврат ставки.
+
+🎨 Оформление:
+— Стиль киберпанк, единый с Z-майнингом.
+— Анимация карт, цветные масти.
+— Эффект монеток при выигрыше.
+
+🔊 Звуки:
+— click.wav — раздача карт.
+— win.mp3 — выигрыш.
+— coin_buy.mp3 — ставка.
+
+💾 Сохранение:
+— Баланс USD синхронизируется с localStorage (ключ zMining).
+— После каждого раунда баланс обновляется в игре и бирже.
+
+🔄 Переход:
+— Кнопка возврата в Z-майнинг (index.html).
+— Автосинхронизация USD каждые 3 секунды.
+
+Версия от 12.02.2026
+            `;
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write(`
+                <html>
+                <head><title>Changelog · 21</title>
+                <style>
+                    body { font-family: 'Ithaca', sans-serif; background: #0f0f23; color: #e0e0e0; padding: 30px; }
+                    pre { background: #1a1a3e; padding: 20px; border-radius: 12px; border-left: 5px solid #00ffff; }
+                    button { background: #00b3ff; color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; }
+                </style>
+                </head>
+                <body>
+                    <h2>📜 21 — список изменений</h2>
+                    <pre>${changelogText}</pre>
+                    <button onclick="window.close()">Закрыть</button>
+                </body>
+                </html>
+            `);
+        }
+
+        // Делаем функцию глобальной
+        window.openChangelog21 = openChangelog21;
+    </script>
+</body>
+</html>

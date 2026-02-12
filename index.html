@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Z‑майнинг</title>
+<style>
+@font-face {
+font-family: 'Ithaca';
+src: url('res/ofont_Ithaca.ttf') format('truetype');
+font-weight: normal;
+font-style: normal;
+}
+
+* {
+margin: 0;
+padding: 0;
+font-family: 'Ithaca', sans-serif;
+box-sizing: border-box;
+}
+body {
+background: linear-gradient(135deg, #0f0f23, #1a1a3e);
+color: #e0e0e0;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+min-height: 100vh;
+text-align: center;
+}
+.container {
+width: 90%;
+max-width: 1280px;
+background: rgba(25, 25, 45, 0.9);
+border-radius: 20px;
+padding: 30px;
+box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+position: relative;
+backdrop-filter: blur(10px);
+}
+h1 {
+color: #00ffff;
+margin-bottom: 30px;
+font-size: 2.8em;
+text-shadow: 0 0 10px #00ffff, 0 0 20px #0066ff;
+}
+.stats {
+display: flex;
+flex-wrap: wrap;
+justify-content: space-around;
+margin: 25px 0;
+background: rgba(0, 0, 0, 0.4);
+padding: 20px;
+border-radius: 15px;
+gap: 15px;
+backdrop-filter: blur(5px);
+}
+.stat {
+text-align: center;
+flex: 1 1 220px;
+padding: 10px;
+}
+.stat p {
+font-size: 1em;
+color: #88d0ff;
+margin-bottom: 8px;
+}
+.stat strong {
+font-size: 1.4em;
+color: #ffffff;
+display: block;
+}
+.level-bar {
+width: 100%;
+height: 12px;
+background: rgba(0, 0, 0, 0.6);
+border-radius: 6px;
+overflow: hidden;
+margin: 20px 0 30px;
+border: 1px solid #00b3ff;
+}
+.level-fill {
+height: 100%;
+background: linear-gradient(90deg, #00c6ff, #0077ff);
+width: 0%;
+transition: width 0.6s ease;
+}
+button {
+background: linear-gradient(45deg, #00b3ff, #0077ff);
+color: white;
+border: none;
+padding: 14px 30px;
+margin: 10px 8px;
+border-radius: 12px;
+cursor: pointer;
+font-size: 1.1em;
+font-weight: bold;
+transition: all 0.3s;
+position: relative;
+overflow: hidden;
+box-shadow: 0 4px 15px rgba(0, 180, 255, 0.3);
+}
+button:hover {
+background: linear-gradient(45deg, #0099e6, #005db3);
+transform: translateY(-3px);
+box-shadow: 0 6px 20px rgba(0, 150, 230, 0.4);
+}
+button:active {
+transform: scale(0.95);
+}
+.mine-btn {
+min-width: 260px;
+font-size: 1.4em;
+padding: 18px 40px;
+background: linear-gradient(45deg, #00ff9d, #00b366);
+}
+.upgrade-btn, .exchange-btn {
+background: linear-gradient(45deg, #ff6b6b, #ff3b3b);
+}
+.upgrade-panel, .exchange-panel {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%) scale(0.7);
+background: rgba(30, 30, 55, 0.98);
+border-radius: 20px;
+padding: 40px;
+width: 85%;
+max-width: 700px;
+box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+z-index: 1000;
+opacity: 0;
+pointer-events: none;
+transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+backdrop-filter: blur(10px);
+border: 1px solid #00b3ff;
+max-height: 80vh;
+overflow-y: auto;
+}
+.upgrade-panel.active, .exchange-panel.active {
+transform: translate(-50%, -50%) scale(1);
+opacity: 1;
+pointer-events: auto;
+}
+.panel-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 25px;
+border-bottom: 1px solid #448aff;
+padding-bottom: 15px;
+}
+.panel-close {
+background: none;
+border: none;
+color: #ff6b6b;
+font-size: 2em;
+font-weight: bold;
+cursor: pointer;
+transition: color 0.3s;
+}
+.panel-close:hover {
+color: #ff0000;
+}
+.shop, .exchange-content {
+display: flex;
+flex-direction: column;
+gap: 20px;
+}
+.item, .exchange-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 20px;
+background: rgba(0, 0, 0, 0.3);
+border-radius: 12px;
+transition: background 0.3s, transform 0.2s;
+border: 1px solid rgba(0, 180, 255, 0.2);
+}
+.item:hover, .exchange-row:hover {
+background: rgba(0, 180, 255, 0.15);
+transform: translateY(-2px);
+}
+.item-content, .exchange-info {
+flex: 1;
+text-align: left;
+}
+.item-name, .exchange-label {
+font-size: 1.2em;
+color: #ffffff;
+margin-bottom: 5px;
+}
+.item-desc, .exchange-rate {
+font-size: 0.9em;
+color: #aaaaaa;
+}
+.item-price, .exchange-amount {
+color: #ffd700;
+font-weight: bold;
+font-size: 1.1em;
+margin: 0 20px;
+white-space: nowrap;
+}
+.item-btn, .exchange-btn {
+min-width: 120px;
+font-size: 0.9em;
+}
+.overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.7);
+z-index: 999;
+display: none;
+}
+.overlay.active {
+display: block;
+}
+.footer {
+margin-top: 30px;
+color: #aaaaaa;
+font-size: 0.8em;
+text-align: center;
+}
+.effect-coin {
+position: absolute;
+color: #ffd700;
+font-size: 24px;
+opacity: 0;
+animation: coin-anim 1s forwards;
+pointer-events: none;
+z-index: 1000;
+}
+@keyframes coin-anim {
+0% { opacity: 1; transform: scale(1) translateY(0); }
+100% { opacity: 0; transform: scale(2) translateY(-30px); }
+}
+@media (max-width: 768px) {
+.container {
+padding: 20px;
+margin: 10px auto;
+}
+h1 {
+font-size: 2.2em;
+}
+.stats {
+gap: 10px;
+padding: 15px;
+}
+.stat {
+flex: 1 1 100%;
+padding: 8px;
+}
+.upgrade-panel, .exchange-panel {
+width: 95%;
+max-width: none;
+left: 5%;
+transform: translate(-5%, -50%) scale(0.9);
+}
+}
+
+
+</style>
+<script>
+async function fetchUsdRate() {
+try {
+const response = await fetch('https://www.cbr-xml-daily.ru/daily_json.js');
+if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+const data = await response.json();
+USD_TO_RUB_RATE = data.Valute.USD.Value;
+usdToRubRate.textContent = `Курс: 1 $ = ${USD_TO_RUB_RATE.toFixed(2)} ₽`;
+updateExchangeDisplay();
+} catch (e) {
+console.error('Курс не загружен:', e);
+USD_TO_RUB_RATE = 90; // Резервный курс
+usdToRubRate.textContent = 'Курс: недоступен (90 ₽/$)';
+updateExchangeDisplay();
+}
+}
+</script>
+
+</head>
+<body>
+<div class="container">
+<h1>Z‑майнинг</h1>
+
+<!-- Отображение уровня игрока -->
+<div class="level-display" style="
+    margin: 20px 0;
+    font-size: 1.8em;
+    color: #00ffff;
+    text-shadow: 0 0 8px #00ffff;
+">Ваш уровень: <span id="currentLevel">1</span></div>
+
+
+<div class="stats">
+<div class="stat">
+<p>Баланс (Z)</p>
+<strong id="balance">0.1 Z</strong>
+</div>
+<div class="stat">
+<p>Баланс (₽)</p>
+<strong id="rubBalance">1.00 ₽</strong>
+</div>
+<div class="stat">
+<p>Скорость майнинга</p>
+<strong id="mineRate">0.1 Z/сек</strong>
+</div>
+<div class="stat">
+<p>Мощность фермы</p>
+<strong id="farmPower">10 TH/s</strong>
+</div>
+</div>
+
+<div class="level-bar">
+<div class="level-fill" id="levelFill"></div>
+</div>
+
+<button class="mine-btn" id="mineBtn">Майнить!</button>
+
+<div style="margin: 25px 0; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+    <button class="upgrade-btn" id="upgradeBtn">Улучшения фермы</button>
+    <button class="exchange-btn" id="exchangeBtn">Обмен валют</button>
+    <button id="openExchangeBtn" class="exchange-btn" style="background: linear-gradient(45deg, #00b3ff, #0077ff);">
+        Z-Биржа
+    </button>
+    <!-- НОВАЯ КНОПКА: Z-КАЗИНО -->
+    <button id="openCasinoBtn" class="exchange-btn" style="background: linear-gradient(45deg, #ffaa00, #ff6600);">
+        🎰 Z-Казино
+    </button>
+</div>
+
+
+
+<!-- Панель улучшений -->
+<div class="overlay" id="overlay"></div>
+<div class="upgrade-panel" id="upgradePanel">
+<div class="panel-header">
+<h2>Магазин улучшений (цена в ₽)</h2>
+<button class="panel-close" id="closeUpgradePanel">×</button>
+</div>
+<div class="shop" id="shopItems"></div>
+</div>
+
+<!-- Панель обмена -->
+<div id="exchangePanel" class="exchange-panel">
+<div class="panel-header">
+<h2>Обмен валют</h2>
+<button class="panel-close" id="closeExchangePanel">×</button>
+</div>
+<div class="exchange-content">
+<div class="exchange-row">
+<span class="exchange-label">Ваш виртуальный баланс (Z к USD):</span>
+<strong id="zToUsdRate">0.0000 $</strong>
+</div>
+<div class="exchange-row">
+<span class="exchange-label">Курс USD→RUB:</span>
+<strong id="usdToRubRate">Загрузка...</strong>
+</div>
+<div class="exchange-row">
+<span class="exchange-label">Сумма в рублях:</span>
+<strong id="usdToRubAmount">0.00 ₽</strong>
+</div>
+<button id="convertZToUsd" class="exchange-btn">Z перевести в USD</button>
+<button id="convertUsdToRub" class="exchange-btn">Зачислить USD >> RUB на Баланс</button>
+</div>
+</div>
+
+<div class="footer">
+<p id="statusMsg"></p>
+<p>Прогресс сохраняется автоматически каждые 10 сек и после каждого действия!</p>
+</div>
+</div>
+
+
+<button id="resetProgressBtn" title="Сбросить прогресс" style="
+position: fixed;
+bottom: 10px;
+right: 10px;
+width: 50px;
+height: 50px;
+background: red;
+border: 1px solid white;
+border-radius: 50%;
+cursor: pointer;
+z-index: 9999;
+padding: 0;
+color: white;
+opacity: 0.2;
+transition: opacity 0.5s;
+font-weight: bold;
+font-size: 10px;
+">HARD RESET!</button>
+
+
+<script>
+function updateExchangeDisplay() {
+const usdAmount = gameData.balance * Z_TO_USD_RATE;
+zToUsdRate.textContent = `${usdAmount.toFixed(4)} $`;
+
+if (USD_TO_RUB_RATE !== null) {
+const rubAmount = gameData.usdBalance * USD_TO_RUB_RATE;
+usdToRubAmount.textContent = `${rubAmount.toFixed(2)}  ₽`;
+}
+}
+
+// Звуки
+const mineSound = new Audio('res/click.wav');
+const buySound = new Audio('res/coin_buy.mp3');
+const lvlUpSound = new Audio('res/lvl_up.mp3');
+const backgroundSound = new Audio('res/mine_loop.mp3');
+
+mineSound.volume = 0.5;
+buySound.volume = 0.7;
+lvlUpSound.volume = 0.8;
+backgroundSound.volume = 0.2;
+backgroundSound.loop = true;
+
+// DOM-элементы
+const balanceEl = document.getElementById('balance');
+const rubBalanceEl = document.getElementById('rubBalance');
+const mineRateEl = document.getElementById('mineRate');
+const farmPowerEl = document.getElementById('farmPower');
+const levelEl = document.getElementById('level');
+const levelFillEl = document.getElementById('levelFill');
+const upgradeBtn = document.getElementById('upgradeBtn');
+const exchangeBtn = document.getElementById('exchangeBtn');
+const closeUpgradePanel = document.getElementById('closeUpgradePanel');
+const closeExchangePanel = document.getElementById('closeExchangePanel');
+const upgradePanel = document.getElementById('upgradePanel');
+const exchangePanel = document.getElementById('exchangePanel');
+const overlay = document.getElementById('overlay');
+const shopItems = document.getElementById('shopItems');
+const convertZToUsd = document.getElementById('convertZToUsd');
+const convertUsdToRub = document.getElementById('convertUsdToRub');
+const zToUsdRate = document.getElementById('zToUsdRate');
+const usdToRubRate = document.getElementById('usdToRubRate');
+const usdToRubAmount = document.getElementById('usdToRubAmount');
+const statusMsg = document.getElementById('statusMsg');
+
+// Данные игры (теперь улучшения покупаются за RUB)
+let gameData = {
+balance: 0.1, // Z
+usdBalance: 10, // USD
+rubBalance: 500, // RUB (увеличен для тестирования)
+mineRate: 0.1, // Z/сек
+farmPower: 1, // TH/s
+level: 1,
+exp: 0,
+upgrades: {
+gpu: 0, asic: 0, cooling: 0, powerSupply: 0,
+network: 0, security: 0, storage: 0, automation: 0
+}
+};
+
+// Курсы
+const Z_TO_USD_RATE = 0.002; // 1 Z = 0.002 $
+let USD_TO_RUB_RATE = null;
+
+
+// Цены улучшений в рублях (примерные) !ЦЕНЫ НА ТОВАРЫ МЕНЯТЬ В ЭТОМ РАЗДЕЛЕ!
+const UPGRADE_PRICES_RUB = {
+gpu: 138000,
+asic: 165000,
+cooling: 8000,
+powerSupply: 12000,
+network: 20000,
+security: 7000,
+storage: 6500,
+automation: 15000
+};
+
+
+// Загрузка курса USD→RUB
+async function fetchUsdRate() {
+try {
+// Основной источник — официальный API ЦБ РФ
+const response = await fetch('https://www.cbr-xml-daily.ru/daily_json.js');
+
+// Проверяем статус ответа
+if (!response.ok) {
+throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+}
+
+const data = await response.json();
+
+// Извлекаем курс USD→RUB
+USD_TO_RUB_RATE = data.Valute.USD.Value;
+
+// Обновляем интерфейс
+usdToRubRate.textContent = `Курс: 1 $ = ${USD_TO_RUB_RATE.toFixed(2)} ₽`;
+updateExchangeDisplay();
+
+} catch (error) {
+console.error('Ошибка загрузки курса:', error);
+
+// Вариант 1: Используем резервный курс из localStorage (если есть)
+const savedRate = localStorage.getItem('usdToRubBackup');
+if (savedRate) {
+USD_TO_RUB_RATE = parseFloat(savedRate);
+usdToRubRate.textContent = `Курс: 1 $ ≈ ${USD_TO_RUB_RATE.toFixed(2)} ₽ (резервный)`;
+updateExchangeDisplay();
+return;
+}
+
+// Вариант 2: Устанавливаем разумный дефолтный курс
+USD_TO_RUB_RATE = 90.00; // Дефолт при полном отсутствии данных
+localStorage.setItem('usdToRubBackup', USD_TO_RUB_RATE);
+
+usdToRubRate.textContent = 'Курс: недоступен (используется 90 ₽/$)';
+updateExchangeDisplay();
+}
+}
+
+
+
+// Обновление отображения обмена
+function updateExchangeDisplay() {
+const usdAmount = gameData.balance * Z_TO_USD_RATE;
+zToUsdRate.textContent = `${usdAmount.toFixed(4)} $`;
+
+if (USD_TO_RUB_RATE !== null) {
+const rubAmount = gameData.usdBalance * USD_TO_RUB_RATE;
+usdToRubAmount.textContent = `${rubAmount.toFixed(2)}  ₽`;
+}
+}
+
+// Обмен Z на доллары
+convertZToUsd.addEventListener('click', () => {
+if (gameData.balance <= 0) {
+alert('Недостаточно Z для обмена!');
+return;
+}
+
+const usdReceived = gameData.balance * Z_TO_USD_RATE;
+gameData.usdBalance += usdReceived;
+gameData.balance = 0;
+
+buySound.play().catch(e => console.log('Звук обмена не воспроизведён:', e));
+updateUI();
+updateExchangeDisplay();
+saveGame();
+statusMsg.innerHTML = `<strong style="font-size: 1.2em;">Обменено на ${usdReceived.toFixed(4)} $!</strong>`;
+setTimeout(() => statusMsg.textContent = '', 5000);
+});
+
+// кодик для уровня для того чтобы там умножалась награда (короче коэффициенты типа награды-формула)
+function getLevelReward(level) {
+    return Math.floor(30 * level + 0.5 * level * level);
+}
+
+
+// Обмен долларов на рубли
+convertUsdToRub.addEventListener('click', () => {
+if (gameData.usdBalance <= 0) {
+alert('Недостаточно долларов для обмена!');
+return;
+}
+if (USD_TO_RUB_RATE === null) {
+alert('Курс USD/RUB не загружен. Попробуйте позже.');
+return;
+}
+
+const rubReceived = gameData.usdBalance * USD_TO_RUB_RATE;
+gameData.rubBalance += rubReceived;
+gameData.usdBalance = 0;
+
+buySound.play().catch(e => console.log('Звук обмена не воспроизведён:', e));
+updateUI();
+updateExchangeDisplay();
+saveGame();
+statusMsg.innerHTML = `<strong style="font-size: 1.2em; font-weight: bold;">Обменено на ${rubReceived.toFixed(2)}  ₽!</strong>`;
+setTimeout(() => statusMsg.textContent = '', 5000);
+});
+
+// Загрузка сохранения
+function loadGame() {
+const saved = localStorage.getItem('zMining');
+if (saved) {
+gameData = JSON.parse(saved);
+}
+updateUI();
+}
+
+// Сохранение игры
+
+
+// Обновление интерфейса (обновлено для того чтобы правильно уровень отображало)
+function updateUI() {
+    if (balanceEl) balanceEl.textContent = gameData.balance.toFixed(1) + ' Z';
+    if (rubBalanceEl) rubBalanceEl.textContent = gameData.rubBalance.toFixed(2) + '  ₽';
+    if (mineRateEl) mineRateEl.textContent = gameData.mineRate.toFixed(2) + ' Z/сек';
+    if (farmPowerEl) farmPowerEl.textContent = gameData.farmPower.toFixed(1) + ' TH/s';
+    if (levelEl) levelEl.textContent = gameData.level;
+    if (document.getElementById('currentLevel')) 
+        document.getElementById('currentLevel').textContent = gameData.level; // <-- новая строка
+    if (levelFillEl) levelFillEl.style.width = ((gameData.exp % 100) / 100 * 100) + '%';
+}
+
+
+// Пассивный доход (автоматический майнинг каждую секунду)
+setInterval(() => {
+gameData.balance += gameData.mineRate;
+gameData.exp += gameData.mineRate * 0.1; // Опыт растёт пропорционально добыче
+
+
+// Проверка повышения уровня (обновлено) выдача награды при повышении уровня
+if (gameData.exp >= 100) {
+    const oldLevel = gameData.level;
+    gameData.level++;
+    gameData.exp -= 100;
+
+    // Выдаем награду за новый уровень
+    const reward = getLevelReward(gameData.level);
+    gameData.balance += reward;
+    saveGame(); // ОБЯЗАТЕЛЬНО!
+
+    lvlUpSound.play().catch(e => console.log('Звук повышения уровня не воспроизведён:', e));
+    statusMsg.textContent = `Уровень ${oldLevel} → ${gameData.level}! +${reward.toLocaleString()} Z`;
+    setTimeout(() => statusMsg.textContent = '', 5000);
+}
+
+
+
+updateUI();
+saveGame();
+}, 1000);
+
+// Ручной майнинг (дополнительный доход при клике)
+mineBtn.addEventListener('click', () => {
+const earned = gameData.mineRate * 2;
+gameData.balance += earned;
+gameData.exp += 0.5;
+
+// Эффект монеты (зетки при клике)
+const coin = document.createElement('div');
+coin.className = 'effect-coin';
+coin.textContent = '+Z';
+
+// Получаем размеры видимого окна (без скролла)
+const windowWidth = window.innerWidth;
+const windowHeight = window.innerHeight;
+
+// Генерируем позицию внутри видимой области (с небольшим отступом от краев)
+const margin = 20; // отступ от края экрана в пикселях
+const left = Math.random() * (windowWidth - margin * 2) + margin;
+const top = Math.random() * (windowHeight - margin * 2) + margin;
+
+// Применяем стили
+coin.style.position = 'fixed'; // фиксированное позиционирование (относительно окна)
+coin.style.left = `${left}px`;
+coin.style.top = `${top}px`;
+coin.style.zIndex = '1000'; // поверх других элементов
+
+document.body.appendChild(coin);
+
+setTimeout(() => coin.remove(), 1000);
+
+
+// Звук
+mineSound.play().catch(e => console.log('Звук клика не воспроизведён:', e));
+
+updateUI();
+saveGame();
+});
+
+// Открытие панели улучшений
+upgradeBtn.addEventListener('click', () => {
+upgradePanel.classList.add('active');
+overlay.classList.add('active');
+saveGame();
+renderShop();
+});
+
+// Закрытие панели улучшений
+closeUpgradePanel.addEventListener('click', () => {
+upgradePanel.classList.remove('active');
+overlay.classList.remove('active');
+});
+
+// Открытие панели обмена
+exchangeBtn.addEventListener('click', () => {
+exchangePanel.classList.add('active');
+overlay.classList.add('active');
+updateExchangeDisplay();
+});
+
+// Закрытие панели обмена
+closeExchangePanel.addEventListener('click', () => {
+exchangePanel.classList.remove('active');
+overlay.classList.remove('active');
+});
+
+// Рендеринг магазина улучшений (цены в рублях) ОТОБРАЖЕНИЕ СПИСКА УЛУЧШЕНИЙ ТУТ!
+function renderShop() {
+const upgrades = [
+{
+id: 'gpu',
+name: 'Видеокарты RTX 4090',
+desc: '+0.2 Z/сек, +5 TH/s',
+cost: UPGRADE_PRICES_RUB.gpu
+},
+{
+id: 'asic',
+name: 'ASIC‑майнеры',
+desc: '+0.5 Z/сек, +195 TH/s',
+cost: UPGRADE_PRICES_RUB.asic
+},
+{
+id: 'cooling',
+name: 'Система охлаждения',
+desc: '+0.1 Z/сек, +2 TH/s',
+cost: UPGRADE_PRICES_RUB.cooling
+},
+{
+id: 'powerSupply',
+name: 'Блок питания премиум',
+desc: '+0.15 Z/сек, +4 TH/s',
+cost: UPGRADE_PRICES_RUB.powerSupply
+},
+{
+id: 'network',
+name: 'Сетевая инфраструктура',
+desc: '+0.08 Z/сек, +3 TH/s',
+cost: UPGRADE_PRICES_RUB.network
+},
+{
+id: 'security',
+name: 'Защита от атак',
+desc: '+0.05 Z/сек, +2 TH/s',
+cost: UPGRADE_PRICES_RUB.security
+},
+{
+id: 'storage',
+name: 'Хранилище данных',
+desc: '+0.07 Z/сек, +3 TH/s',
+cost: UPGRADE_PRICES_RUB.storage
+},
+{
+id: 'automation',
+name: 'Автоматизация процессов',
+desc: '+0.12 Z/сек, +6 TH/s',
+cost: UPGRADE_PRICES_RUB.automation
+}
+];
+
+shopItems.innerHTML = '';
+
+upgrades.forEach(upgrade => {
+const item = document.createElement('div');
+item.className = 'item';
+
+const content = document.createElement('div');
+content.className = 'item-content';
+
+const name = document.createElement('div');
+name.className = 'item-name';
+name.textContent = upgrade.name;
+
+const desc = document.createElement('div');
+desc.className = 'item-desc';
+desc.textContent = upgrade.desc;
+
+content.appendChild(name);
+content.appendChild(desc);
+
+const price = document.createElement('strong');
+price.className = 'item-price';
+price.textContent = `${upgrade.cost.toLocaleString('ru-RU')}  ₽`;
+
+const btn = document.createElement('button');
+btn.className = 'item-btn';
+btn.textContent = 'Купить';
+// Отключаем кнопку, если недостаточно рублей
+btn.disabled = gameData.rubBalance < upgrade.cost;
+
+btn.addEventListener('click', () => {
+if (gameData.rubBalance >= upgrade.cost) {
+// Списываем рубли
+gameData.rubBalance -= upgrade.cost;
+// Улучшаем параметры (ПАРАМЕТРЫ ТОВАРОВ ИЗ СПИСКА УЛУЧШЕНИЙ ТУТ)
+switch (upgrade.id) {
+case 'gpu':
+gameData.mineRate += 0.2;
+gameData.farmPower += 5;
+break;
+case 'asic':
+gameData.mineRate += 0.5;
+gameData.farmPower += 195;
+break;
+case 'cooling':
+gameData.mineRate += 0.1;
+gameData.farmPower += 2;
+break;
+case 'powerSupply':
+gameData.mineRate += 0.15;
+gameData.farmPower += 4;
+break;
+case 'network':
+gameData.mineRate += 0.08;
+gameData.farmPower += 3;
+break;
+case 'security':
+gameData.mineRate += 0.05;
+gameData.farmPower += 2;
+break;
+case 'storage':
+gameData.mineRate += 0.07;
+gameData.farmPower += 3;
+break;
+case 'automation':
+gameData.mineRate += 0.12;
+gameData.farmPower += 6;
+break;
+}
+// Увеличиваем счётчик улучшений
+gameData.upgrades[upgrade.id]++;
+
+buySound.play().catch(e => console.log('Звук покупки не воспроизведён:', e));
+updateUI();
+saveGame();
+renderShop(); // Перерисовываем магазин после покупки
+} else {
+alert('Недостаточно рублей для покупки!');
+}
+});
+
+item.appendChild(content);
+item.appendChild(price);
+item.appendChild(btn);
+shopItems.appendChild(item);
+});
+}
+
+// Автоматическое обновление панели обмена каждую секунду, пока она открыта
+let exchangeUpdateInterval = null;
+
+exchangeBtn.addEventListener('click', () => {
+exchangePanel.classList.add('active');
+overlay.classList.add('active');
+updateExchangeDisplay();
+
+// Запускаем периодическое обновление
+exchangeUpdateInterval = setInterval(() => {
+if (exchangePanel.classList.contains('active')) {
+updateExchangeDisplay();
+} else {
+clearInterval(exchangeUpdateInterval);
+exchangeUpdateInterval = null;
+}
+}, 1000);
+});
+
+closeExchangePanel.addEventListener('click', () => {
+exchangePanel.classList.remove('active');
+overlay.classList.remove('active');
+
+// Останавливаем обновление при закрытии
+if (exchangeUpdateInterval) {
+clearInterval(exchangeUpdateInterval);
+exchangeUpdateInterval = null;
+}
+});
+
+// Инициализация игры
+window.addEventListener('load', () => {
+loadGame();
+fetchUsdRate();
+
+// Периодически обновляем курс (раз в 5 минут)
+setInterval(fetchUsdRate, 300000);
+});
+
+window.addEventListener('load', () => {
+fetchUsdRate();
+setInterval(fetchUsdRate, 300000); // Обновлять каждые 5 мин
+});
+
+// Сохранение игры в localStorage для биржи
+function saveGame() {
+    try {
+        localStorage.setItem('zMining', JSON.stringify(gameData));
+        console.log('Сохранено в localStorage:', gameData);
+    } catch (error) {
+        console.error('Ошибка сохранения в localStorage:', error);
+    }
+}
+
+
+</script>
+
+
+<script>
+document.getElementById('resetProgressBtn').addEventListener('click', () => {
+// Подтверждение сброса
+const confirmReset = confirm('Вы уверены, что хотите сбросить прогресс? Все данные будут удалены!');
+
+
+if (confirmReset) {
+// Удаляем сохранение из LocalStorage
+localStorage.removeItem('zMining');
+
+// Сбрасываем текущие данные игры
+gameData = {
+balance: 0.1,
+usdBalance: 1,
+rubBalance: 100,
+mineRate: 0.1,
+farmPower: 1,
+level: 1,
+exp: 0,
+upgrades: {
+gpu: 0, asic: 0, cooling: 0, powerSupply: 0,
+network: 0, security: 0, storage: 0, automation: 0
+}
+};
+
+// Обновляем интерфейс
+updateUI();
+
+alert('Прогресс сброшен!');
+}
+});
+
+const openExchangeBtn = document.getElementById('openExchangeBtn');
+
+openExchangeBtn.addEventListener('click', () => {
+    // 1. Сохраняем прогресс
+    saveGame();
+
+    // 2. Переходим на биржу в текущем окне
+    window.location.href = 'exchange.html';
+});
+
+// Кнопка для перехода в z-казино ниже
+
+const openCasinoBtn = document.getElementById('openCasinoBtn');
+if (openCasinoBtn) {
+    openCasinoBtn.addEventListener('click', () => {
+        // 1. Сохраняем прогресс
+        saveGame();
+        
+        // 2. Переходим в казино (game1.html)
+        window.location.href = 'game1.html';
+    });
+}
+
+</script>
+
+
+Version 07.01.2026
+
+
+<script>
+function openChangelog() {
+    const changelogText = `
+Changelog v2.0.2 (07.01.2026)
+
+1. Реализован переход на биржу:
+   - При нажатии кнопки «Z‑Биржа» игра автоматически сохраняет прогресс.
+   - Пользователь перенаправляется на биржу (exchange.html) в текущем окне.
+
+2. Устранена проблема с закрытием окна:
+   - Ранее браузер блокировал попытку закрыть вкладку.
+   - Теперь используется безопасный переход без принудительного закрытия окна.
+
+3. Улучшена стабильность работы:
+   - Код стал проще и надёжнее — исключены избыточные проверки и таймауты.
+   - Гарантирована совместимость со всеми современными браузерами.
+
+4. Оптимизирован пользовательский опыт:
+   - Переход на биржу происходит мгновенно.
+   - Данные сохраняются без риска потери прогресса.
+
+5. Добавлена история сделок на бирже:
+   - Внизу страницы биржи появился блок «История сделок».
+   - Отображаются последние 5 операций (покупки и продажи).
+   - Для каждой сделки указаны:
+     * Время совершения.
+     * Количество BTC.
+     * Курс BTC/USD на момент сделки.
+     * Итоговая сумма в USD.
+   - Покупки выделены зелёным цветом, продажи — красным.
+   - Если сделок нет, отображается сообщение: «Нет совершённых сделок».
+
+
+6. Сохранение истории между сеансами:
+   - Все сделки сохраняются в localStorage.
+   - История восстанавливается при повторном открытии биржи.
+
+7. Улучшена информативность интерфейса:
+   - Пользователь видит свои прошлые операции.
+   - Легко отследить прибыль/убыток по каждой сделке.
+   - Повышена прозрачность торговых операций.
+    `;
+
+    const newWindow = window.open('', '_blank');
+    newWindow.document.write(`
+        <html>
+        <head><title>Changelog</title></head>
+        <body style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Changelog игры «Z‑майнинг»</h2>
+            <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px;">${changelogText}</pre>
+            <button onclick="window.close()" style="margin-top: 15px;">Закрыть</button>
+        </body>
+        </html>
+    `);
+    newWindow.focus();
+}
+</script>
+
+
+<button onclick="openChangelog()" style="
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Ithaca', sans-serif;
+">Changelog</button>
+
+</body>
+</html>
